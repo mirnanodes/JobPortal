@@ -10,9 +10,15 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class JobController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $jobs = JobVacancy::latest()->get();
+        $query = JobVacancy::query();
+
+        if ($request->filter) {
+            $query->where('job_type', 'like', '%' . $request->filter . '%');
+        }
+
+        $jobs = $query->latest()->get();
         return view('jobs.index', compact('jobs'));
     }
 

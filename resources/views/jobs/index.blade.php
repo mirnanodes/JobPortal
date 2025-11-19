@@ -23,32 +23,31 @@
                 @if (Auth::user()->role === 'admin')
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                         <h3 class="text-lg font-semibold mb-4">Import Lowongan</h3>
-                        
+
                         <div class="mb-4">
-                            <a href="{{ Storage::url('templates/lowongan_template.xlsx') }}" 
-                               download
+                            <a href="{{ route('jobs.template') }}"
                                class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
                                 Download Template Import
                             </a>
                         </div>
 
-                        <form action="{{ route('jobs.import') }}" 
-                              method="POST" 
-                              enctype="multipart/form-data" 
+                        <form action="{{ route('jobs.import') }}"
+                              method="POST"
+                              enctype="multipart/form-data"
                               class="space-y-4">
                             @csrf
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Upload File Excel (.xlsx)
                                 </label>
-                                <input type="file" 
-                                       name="file" 
+                                <input type="file"
+                                       name="file"
                                        accept=".xlsx,.xls,.csv"
                                        required
                                        class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white focus:outline-none p-2">
                             </div>
                             <button type="submit"
-                                    class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700">
+                                    class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
                                 Import Data
                             </button>
                         </form>
@@ -59,14 +58,30 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <div class="flex items-center justify-between mb-6">
-                        <p class="text-lg font-medium text-gray-700">
-                            Kelola lowongan kerja yang tersedia.
-                        </p>
+                        <div class="flex items-center gap-4">
+                            <p class="text-lg font-medium text-gray-700">
+                                {{ Auth::check() && Auth::user()->role === 'jobseeker' ? 'Cari Lowongan Kerja' : 'Kelola lowongan kerja yang tersedia' }}
+                            </p>
+
+                            @auth
+                                @if (Auth::user()->role === 'jobseeker')
+                                    <form action="{{ route('jobs.index') }}" method="GET">
+                                        <select name="filter" onchange="this.form.submit()" class="border border-gray-300 rounded-md pl-3 pr-8 py-2 text-sm">
+                                            <option value="">Semua Lowongan</option>
+                                            <option value="full-time" {{ request('filter') == 'full-time' ? 'selected' : '' }}>Full-time</option>
+                                            <option value="part-time" {{ request('filter') == 'part-time' ? 'selected' : '' }}>Part-time</option>
+                                            <option value="contract" {{ request('filter') == 'contract' ? 'selected' : '' }}>Contract</option>
+                                            <option value="freelance" {{ request('filter') == 'freelance' ? 'selected' : '' }}>Freelance</option>
+                                        </select>
+                                    </form>
+                                @endif
+                            @endauth
+                        </div>
 
                         @auth
                             @if (Auth::user()->role === 'admin')
                                 <a href="{{ route('jobs.create') }}"
-                                   class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
+                                   class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
                                     Tambah Lowongan
                                 </a>
                             @endif
@@ -103,10 +118,10 @@
 
                                                     @if (Auth::user()->role === 'admin')
                                                         <a href="{{ route('jobs.edit', $job->id) }}"
-                                                           class="inline-flex items-center px-3 py-1 bg-yellow-600 text-white text-xs font-semibold rounded-md hover:bg-yellow-700">
+                                                           class="inline-flex items-center px-3 py-1 bg-orange-600 text-white text-xs font-semibold rounded-md hover:bg-orange-700">
                                                             Edit
                                                         </a>
-                                                        <form action="{{ route('jobs.destroy', $job->id) }}" 
+                                                        <form action="{{ route('jobs.destroy', $job->id) }}"
                                                               method="POST"
                                                               onsubmit="return confirm('Yakin ingin menghapus?')">
                                                             @csrf

@@ -16,24 +16,30 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <div class="flex items-center justify-between mb-6">
-                        <p class="text-lg font-medium text-gray-700">
-                            Kelola daftar pelamar yang tersedia.
-                        </p>
+                        <div class="flex items-center gap-4">
+                            <p class="text-lg font-medium text-gray-700">
+                                Kelola daftar pelamar yang tersedia.
+                            </p>
 
-                        <div class="flex gap-3">
-                            <form action="{{ route('applications.export') }}" method="GET" class="flex gap-3 items-center">
-                                <select name="job_id" class="border border-gray-300 rounded-md pl-3 pr-8 py-2 text-sm">
+                            <form action="{{ route('applications.index') }}" method="GET">
+                                <select name="job_id" onchange="this.form.submit()" class="border border-gray-300 rounded-md pl-3 pr-8 py-2 text-sm">
                                     <option value="">Semua Lowongan</option>
-                                    @foreach ($applications->pluck('job')->unique() as $job)
-                                        <option value="{{ $job->id }}">{{ $job->title }}</option>
+                                    @foreach ($jobs as $job)
+                                        <option value="{{ $job->id }}" {{ request('job_id') == $job->id ? 'selected' : '' }}>
+                                            {{ $job->title }}
+                                        </option>
                                     @endforeach
                                 </select>
-                                <button type="submit"
-                                        class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700">
-                                    Export ke Excel
-                                </button>
                             </form>
                         </div>
+
+                        <form action="{{ route('applications.export') }}" method="GET">
+                            <input type="hidden" name="job_id" value="{{ request('job_id') }}">
+                            <button type="submit"
+                                    class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700">
+                                Export ke Excel
+                            </button>
+                        </form>
                     </div>
 
                     <div class="overflow-x-auto">
@@ -53,22 +59,23 @@
                                         <td class="px-4 py-3 text-sm text-gray-700">{{ $app->user->name }}</td>
                                         <td class="px-4 py-3 text-sm text-gray-700">{{ $app->job->title }}</td>
                                         <td class="px-4 py-3 text-sm">
-                                            <div class="flex gap-2">
-                                                <a href="{{ asset('storage/' . $app->cv) }}" target="_blank"
-                                                   class="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-md hover:bg-blue-700">
-                                                    Lihat CV
-                                                </a>
-                                                <a href="{{ asset('storage/' . $app->cv) }}" download
-                                                   class="inline-flex items-center px-3 py-1 bg-green-600 text-white text-xs font-semibold rounded-md hover:bg-green-700">
-                                                    Download
-                                                </a>
-                                            </div>
+                                            <a href="{{ route('applications.downloadCV', $app->id) }}"
+                                               class="inline-flex items-center px-3 py-1 bg-purple-600 text-white text-xs font-semibold rounded-md hover:bg-purple-700">
+                                                CV
+                                            </a>
                                         </td>
                                         <td class="px-4 py-3 text-sm">
-                                            <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium
-                                                {{ $app->status === 'Pending' ? 'bg-yellow-100 text-yellow-700' : 
-                                                   ($app->status === 'Accepted' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700') }}">
-                                                {{ $app->status }}
+                                            @php
+                                                $statusLower = strtolower($app->status);
+                                                $statusColors = [
+                                                    'pending' => 'bg-yellow-100 text-yellow-700',
+                                                    'interview' => 'bg-blue-100 text-blue-700',
+                                                    'accepted' => 'bg-green-100 text-green-700',
+                                                    'rejected' => 'bg-red-100 text-red-700'
+                                                ];
+                                            @endphp
+                                            <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium {{ $statusColors[$statusLower] ?? 'bg-gray-100 text-gray-700' }}">
+                                                {{ ucfirst($app->status) }}
                                             </span>
                                         </td>
                                         <td class="px-4 py-3 text-sm">
